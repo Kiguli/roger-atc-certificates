@@ -1,0 +1,37 @@
+{
+  "title": "Code, data and proofs for \"Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition\"",
+  "upload_type": "software",
+  "description": "<p>Reproducibility package for the TMLR paper <em>Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition</em> (Ben Wooding and Taylor T. Johnson).</p><p>It contains the analysis, campaign and figure scripts that produced the paper, the raw per-draw experimental data (the complete N = 1000 outcome vector for every model, dataset, message and SNR cell), the stored transcripts used by the semantic-equivalence audit, and the Lean 4 formalization of the paper's results.</p><p>One command, <code>python reproduce.py</code>, regenerates every number macro file and figure the camera-ready paper reads and checks each one against the published version. With no audio and no GPU, all 39 files reproduce exactly: text byte for byte, figures pixel for pixel. <code>--from-raw</code> also rebuilds the revision per-draw tables from the raw decode dumps (16/16 identical).</p><p><strong>Not included:</strong> model weights and third-party audio. The archived LiveATC recordings are not redistributable; a manifest gives each certified clip's SHA-256, public source and cut offsets so the identical audio can be rebuilt.</p>",
+  "creators": [
+    {
+      "name": "Wooding, Ben",
+      "affiliation": "Institute for Software Integrated Systems, Vanderbilt University"
+    },
+    {
+      "name": "Johnson, Taylor T.",
+      "affiliation": "Institute for Software Integrated Systems, Vanderbilt University"
+    }
+  ],
+  "keywords": [
+    "speech recognition",
+    "air traffic control",
+    "probabilistic verification",
+    "statistical model checking",
+    "Clopper-Pearson",
+    "neural network verification",
+    "safety-critical AI",
+    "reproducibility",
+    "Lean 4"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "identifier": "https://openreview.net/forum?id=9Pj3FcSfgz",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-article"
+    }
+  ],
+  "notes": "Code and the Lean 4 formalization are MIT licensed. The experimental data (data/, expected/) are CC BY 4.0; data/external/airlines.dat is OpenFlights data under ODbL 1.0. See LICENSE and LICENSE-DATA.md."
+}
