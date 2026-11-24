@@ -1,0 +1,15 @@
+# Analysis tier (reproduce.py). Versions are the ones the paper was produced with.
+# Python 3.10.11
+numpy==1.26.4
+scipy==1.15.3
+mpmath==1.3.0
+matplotlib==3.10.9
+soundfile==0.14.0
+# run_scenario_datasets.py imports torch at module load; the CPU build is enough
+# for reproduce.py. The GPU campaign used torch 2.11.0+cu128.
+torch==2.11.0
+# semantic-equivalence audit and embedder audit (sentence embeddings)
+sentence-transformers==5.6.0
+transformers==5.12.1
+# optional: pixel-level PDF comparison in reproduce.py
+pymupdf==1.28.0

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the paper."
+title: "Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition (code and data)"
+authors:
+  - family-names: Wooding
+    given-names: Ben
+    affiliation: "Institute for Software Integrated Systems, Vanderbilt University"
+  - family-names: Johnson
+    given-names: Taylor T.
+    affiliation: "Institute for Software Integrated Systems, Vanderbilt University"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition"
+  authors:
+    - family-names: Wooding
+      given-names: Ben
+    - family-names: Johnson
+      given-names: Taylor T.
+  journal: "Transactions on Machine Learning Research"
+  year: 2026
+  url: "https://openreview.net/forum?id=9Pj3FcSfgz"

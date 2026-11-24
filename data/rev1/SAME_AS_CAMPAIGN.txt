@@ -1,0 +1,6 @@
+results_atc_deepspeech2_atco2.csv
+results_atc_whisper_atc_atcosim.csv
+results_sem_deepspeech2_atco2.csv
+results_sem_whisper_atc_atcosim.csv
+texts_sem_deepspeech2_atco2.jsonl.gz
+texts_sem_whisper_atc_atcosim.jsonl.gz
