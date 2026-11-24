@@ -7,7 +7,7 @@ they are the exact weights the campaigns ran with.
 No model weights are redistributed in this repository; each one comes from
 its original publisher under its own licence:
 
-  qn     QuartzNet15x5     NVIDIA NeMo stt_en_quartznet15x5      (CC BY 4.0)
+  qn     QuartzNet15x5     NVIDIA NGC nemo/stt_en_quartznet15x5 1.0.0rc1 (CC BY 4.0)
          -> models/qn/{model_weights.ckpt,model_config.yaml}
   ds2    DeepSpeech2       SeanNaren/deepspeech.pytorch V3.0      (MIT)
          librispeech_pretrained_v3.ckpt, converted to a plain state_dict
@@ -34,12 +34,16 @@ REPO = Path(__file__).resolve().parents[1]
 MODELS = REPO / "models"          # git-ignored; reproduce.py copies it into build/
 DL = MODELS / "_downloads"
 
+QN_URL = ("https://api.ngc.nvidia.com/v2/models/nvidia/nemo/stt_en_quartznet15x5/"
+          "versions/1.0.0rc1/files/stt_en_quartznet15x5.nemo")
 QN_SHA = {
     "model_weights.ckpt": "489bcd4036716a1573391744cd0790ce613822407a106ba3209269e7b1617f2c",
     "model_config.yaml": "1b986f096f5fc08435cce51c001968c9776bfa3ba538bb230f2bd080453d0fc7",
 }
 DS2_URL = ("https://github.com/SeanNaren/deepspeech.pytorch/releases/download/"
            "V3.0/librispeech_pretrained_v3.ckpt")
+# SHA-256 of the release file (checked before loading it)
+DS2_FILE_SHA = "762701a432e68cc9ed6f8baa74d911b7d942729e6c3740c8d78febcee8a496fd"
 # tensor_digest() of the ds2_state_dict.pt the campaign loaded (80 tensors)
 DS2_TENSOR_SHA = "ad88607e3e078e80a2161f3617c8cdeddb9ef2e5415b5a6b231cf468636a4d6f"
 WHISPER = {
@@ -69,9 +73,18 @@ def tensor_digest(sd) -> str:
     return h.hexdigest()
 
 
+def download(url, dst: Path):
+    if not dst.exists():
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        print("      downloading", url)
+        tmp = dst.with_suffix(dst.suffix + ".part")
+        urllib.request.urlretrieve(url, tmp)
+        tmp.replace(dst)
+    return dst
+
+
 def fetch_qn():
-    from huggingface_hub import hf_hub_download
-    nemo = hf_hub_download("nvidia/stt_en_quartznet15x5", "stt_en_quartznet15x5.nemo")
+    nemo = download(QN_URL, DL / "stt_en_quartznet15x5.nemo")
     out = MODELS / "qn"
     out.mkdir(parents=True, exist_ok=True)
     with tarfile.open(nemo) as t:
@@ -86,15 +99,56 @@ def fetch_qn():
     print("qn    QuartzNet15x5: OK (SHA-256 matches the campaign's weights)")
 
 
+class _Stub:
+    """Inert stand-in for any non-tensor class in a checkpoint: accepts and
+    stores whatever the pickle passes, runs no code from the file."""
+    def __init__(self, *a, **k):
+        self._args = a
+    def __setstate__(self, state):
+        self._state = state
+    def __setitem__(self, k, v):
+        pass
+    def append(self, v):
+        pass
+    def extend(self, v):
+        pass
+
+
+def _stub_pickle_module():
+    """A pickle module for torch.load whose Unpickler resolves only what is
+    needed to rebuild tensors; every other global becomes an inert _Stub."""
+    import pickle
+    import types
+    allow = {("collections", "OrderedDict")}
+    for n in ("dict", "list", "tuple", "set", "frozenset", "int", "float",
+              "str", "bool", "bytes", "bytearray", "complex", "slice"):
+        allow.add(("builtins", n))
+
+    class Unpickler(pickle.Unpickler):
+        def find_class(self, mod, name):
+            if (mod, name) in allow or mod == "torch._utils" or (
+                    mod == "torch" and name.endswith("Storage")) or (
+                    mod == "torch" and name in ("Size", "device", "dtype")):
+                return super().find_class(mod, name)
+            if mod == "collections" and name == "defaultdict":
+                return lambda *a: {}
+            return type(name, (_Stub,), {})
+
+    m = types.ModuleType("stub_pickle")
+    m.Unpickler, m.load = Unpickler, pickle.load
+    m.__name__ = "stub_pickle"
+    return m
+
+
 def fetch_ds2():
     import torch
-    DL.mkdir(parents=True, exist_ok=True)
-    ck_p = DL / "librispeech_pretrained_v3.ckpt"
-    if not ck_p.exists():
-        print("ds2   downloading", DS2_URL)
-        urllib.request.urlretrieve(DS2_URL, ck_p)
-    ck = torch.load(ck_p, map_location="cpu", weights_only=False)
-    sd = ck.get("state_dict", ck)
+    ck_p = download(DS2_URL, DL / "librispeech_pretrained_v3.ckpt")
+    got = sha256(ck_p)               # checked before anything is unpickled
+    if got != DS2_FILE_SHA:
+        sys.exit(f"ds2: download sha256 {got} != expected {DS2_FILE_SHA}")
+    ck = torch.load(ck_p, map_location="cpu", weights_only=False,
+                    pickle_module=_stub_pickle_module())
+    sd = ck["state_dict"]
     sd = {k.split("model.", 1)[-1]: v for k, v in sd.items()}
     got = tensor_digest(sd)
     if got != DS2_TENSOR_SHA:

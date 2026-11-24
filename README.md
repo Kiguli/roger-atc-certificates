@@ -128,16 +128,25 @@ audio and a GPU:
 
   | model | source | stored at | check |
   |---|---|---|---|
-  | QuartzNet15x5 | NVIDIA NeMo `nvidia/stt_en_quartznet15x5` (`.nemo`, unpacked) | `models/qn/` | SHA-256 of `model_weights.ckpt` and `model_config.yaml` |
-  | DeepSpeech2 | [deepspeech.pytorch V3.0](https://github.com/SeanNaren/deepspeech.pytorch/releases/tag/V3.0) `librispeech_pretrained_v3.ckpt`, converted to a plain state_dict | `models/ds2_state_dict.pt` | checksum over all 80 tensors |
+  | QuartzNet15x5 | [NVIDIA NGC](https://catalog.ngc.nvidia.com/orgs/nvidia/models/nemo_quartznet15x5) `stt_en_quartznet15x5.nemo` v1.0.0rc1, unpacked | `models/qn/` | SHA-256 of `model_weights.ckpt` and `model_config.yaml` |
+  | DeepSpeech2 | [deepspeech.pytorch V3.0](https://github.com/SeanNaren/deepspeech.pytorch/releases/tag/V3.0) `librispeech_pretrained_v3.ckpt`, converted to a plain state_dict | `models/ds2_state_dict.pt` | SHA-256 of the download, then a checksum over all 80 tensors |
   | Whisper-base | `openai/whisper-base` @ `e37978b` | Hugging Face cache | pinned revision |
   | Whisper-ATC | `jlvdoorn/whisper-large-v3-atco2-asr-atcosim` @ `efd96bd` | Hugging Face cache | pinned revision |
 
   `models/` is git-ignored, and `reproduce.py` copies it into `build/` where
   the campaign scripts look for it. After fetching, set `HF_HUB_OFFLINE=1` so
-  `transformers` loads the pinned Whisper revisions and nothing newer. The DeepSpeech2 release is a
-  PyTorch Lightning checkpoint, and loading it unpickles the file, so only use
-  the official release URL above.
+  `transformers` loads the pinned Whisper revisions and nothing newer.
+  The DeepSpeech2 release is a PyTorch Lightning checkpoint that also pickles
+  training-config objects. `fetch_models.py` verifies the file's SHA-256 first,
+  then loads it with a restricted unpickler that rebuilds only the tensors and
+  replaces every other class with an inert stub, so no code from the file
+  runs and the `deepspeech_pytorch` package is not needed. The saved
+  `ds2_state_dict.pt` contains tensors only and loads with
+  `torch.load(..., weights_only=True)`.
+
+  Tested: all four checks pass. QuartzNet's files match byte for byte, every
+  DeepSpeech2 tensor matches the campaign's, and both Whisper revisions
+  resolve on the Hugging Face Hub.
 
 The command files in `code/campaign_commands/` list the exact invocations
 (SNR grids, N, batch sizes, flags). The main scripts are `run_atc_split.py` and
