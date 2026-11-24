@@ -9,6 +9,8 @@ authors:
     given-names: Taylor T.
     affiliation: "Institute for Software Integrated Systems, Vanderbilt University"
 license: MIT
+doi: 10.5281/zenodo.24513539
+repository-code: "https://github.com/Kiguli/roger-atc-certificates"
 preferred-citation:
   type: article
   title: "Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition"

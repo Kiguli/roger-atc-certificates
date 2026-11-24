@@ -1,5 +1,7 @@
 # Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24513539.svg)](https://doi.org/10.5281/zenodo.24513539)
+
 Code, data and proofs for the paper
 
 > Ben Wooding and Taylor T. Johnson. **Roger? Probabilistic Certificates for
@@ -191,4 +193,15 @@ included.
   year    = {2026},
   url     = {https://openreview.net/forum?id=9Pj3FcSfgz}
 }
+
+@software{wooding2026roger_code,
+  title   = {Code, data and proofs for ``{Roger? Probabilistic Certificates for Safety-Critical ATC Speech Recognition}''},
+  author  = {Wooding, Ben and Johnson, Taylor T.},
+  year    = {2026},
+  doi     = {10.5281/zenodo.24513539},
+  url     = {https://github.com/Kiguli/roger-atc-certificates}
+}
 ```
+
+The DOI above is Zenodo's concept DOI, which always resolves to the latest
+release; v1.0.0 alone is [10.5281/zenodo.24513540](https://doi.org/10.5281/zenodo.24513540).
