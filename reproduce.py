@@ -96,6 +96,10 @@ def build_tree():
     ext = RS / "external/stt/telephony"
     ext.mkdir(parents=True, exist_ok=True)
     shutil.copy2(REPO / "data/external/airlines.dat", ext / "airlines.dat")
+    models = REPO / "models"          # from code/fetch_models.py (GPU campaign only)
+    if models.exists():
+        shutil.copytree(models, RS / "external/stt/models", dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("_downloads"))
     atco2 = REPO / "data/external/atco2_info"
     if atco2.exists():
         dst = RS / "external/stt/atco2_v1_beta/ATCO2-ASRdataset-v1_beta/DATA"

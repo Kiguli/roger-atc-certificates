@@ -65,6 +65,7 @@ re-checks an existing `build/` without rerunning anything.
 
 ```
 reproduce.py          regenerate and check everything (start here)
+code/fetch_models.py  download and verify the four ASR models (GPU reruns only)
 code/stage5/          every analysis, campaign and figure script, verbatim
 code/scenario/        shared threat model: band-limited Gaussian noise at a
                       target SNR, normalisation, call-sign readout, seeding
@@ -121,8 +122,22 @@ audio and a GPU:
   mono, resample to 16 kHz with `scipy.signal.resample_poly`, peak-normalise
   over the **whole** recording, slice `[start_sample_16k:end_sample_16k]`,
   write PCM-16 and check the hash.
-* Model weights (QuartzNet15x5, DeepSpeech2, Whisper-base, Whisper-ATC) are
-  downloaded at run time under their own licences.
+* **Models.** No weights are included. Each one comes from its publisher under
+  its own licence, and `python code/fetch_models.py` downloads all four and
+  checks them against the weights the campaign actually loaded:
+
+  | model | source | stored at | check |
+  |---|---|---|---|
+  | QuartzNet15x5 | NVIDIA NeMo `nvidia/stt_en_quartznet15x5` (`.nemo`, unpacked) | `models/qn/` | SHA-256 of `model_weights.ckpt` and `model_config.yaml` |
+  | DeepSpeech2 | [deepspeech.pytorch V3.0](https://github.com/SeanNaren/deepspeech.pytorch/releases/tag/V3.0) `librispeech_pretrained_v3.ckpt`, converted to a plain state_dict | `models/ds2_state_dict.pt` | checksum over all 80 tensors |
+  | Whisper-base | `openai/whisper-base` @ `e37978b` | Hugging Face cache | pinned revision |
+  | Whisper-ATC | `jlvdoorn/whisper-large-v3-atco2-asr-atcosim` @ `efd96bd` | Hugging Face cache | pinned revision |
+
+  `models/` is git-ignored, and `reproduce.py` copies it into `build/` where
+  the campaign scripts look for it. After fetching, set `HF_HUB_OFFLINE=1` so
+  `transformers` loads the pinned Whisper revisions and nothing newer. The DeepSpeech2 release is a
+  PyTorch Lightning checkpoint, and loading it unpickles the file, so only use
+  the official release URL above.
 
 The command files in `code/campaign_commands/` list the exact invocations
 (SNR grids, N, batch sizes, flags). The main scripts are `run_atc_split.py` and
